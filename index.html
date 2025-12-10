@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <link rel="shortcut icon" href="img/logo.jpeg" type="image/x-icon">
+    <title>Web Capture</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        h1 { margin-bottom: 10px; }
+        p { color: #6b7280; margin-bottom: 30px; }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+
+        input:focus { border-color: #2563eb; }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background-color: #1d4ed8; }
+        button:disabled { background-color: #9ca3af; cursor: wait; }
+
+        .preview-container {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+            min-height: 400px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d1d5db;
+            position: relative;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            display: none; /* Hidden until loaded */
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+        }
+
+        .download-link {
+            margin-top: 20px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            display: none; /* Hidden until loaded */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Website Screenshot Generator</h1>
+    <p>Enter a URL to generate a snapshot of that website.</p>
+
+    <div class="input-group">
+        <input type="url" id="urlInput" placeholder="https://www.apple.com" value="https://">
+        <button onclick="generateScreenshot()" id="genBtn">Capture</button>
+    </div>
+
+    <div class="preview-container">
+        <div class="loading-spinner" id="spinner"></div>
+        <img id="screenshotResult" alt="Website Screenshot" />
+    </div>
+
+    <a href="#" target="_blank" id="downloadBtn" class="download-link">⬇ Open Image in New Tab to Save</a>
+
+    <script>
+        function generateScreenshot() {
+            const urlInput = document.getElementById('urlInput');
+            const img = document.getElementById('screenshotResult');
+            const spinner = document.getElementById('spinner');
+            const btn = document.getElementById('genBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+
+            let targetUrl = urlInput.value.trim();
+
+            if (!targetUrl) {
+                alert("Please enter a URL");
+                return;
+            }
+
+            // Ensure URL has protocol
+            if (!targetUrl.startsWith('http')) {
+                targetUrl = 'https://' + targetUrl;
+            }
+
+            // 1. Reset UI
+            img.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            spinner.style.display = 'block';
+            btn.disabled = true;
+            btn.innerText = "Capturing...";
+
+            // 2. Construct API URL
+            // We use thum.io for this demo as it allows direct embedding.
+            // Format: https://image.thum.io/get/width/<WIDTH>/<URL>
+            const screenshotServiceUrl = `https://image.thum.io/get/width/1200/crop/800/${targetUrl}`;
+
+            // 3. Load Image
+            img.src = screenshotServiceUrl;
+
+            img.onload = function() {
+                spinner.style.display = 'none';
+                img.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Capture";
+                
+                // Set download/open link
+                downloadBtn.href = screenshotServiceUrl;
+                downloadBtn.style.display = 'inline-block';
+            };
+
+            img.onerror = function() {
+                spinner.style.display = 'none';
+                btn.disabled = false;
+                btn.innerText = "Capture";
+                alert("Could not capture this website. It might be blocking bots.");
+            };
+        }
+    </script>
+</body>
+</html>
